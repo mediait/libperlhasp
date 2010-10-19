@@ -1,0 +1,6 @@
+Revision history for Perl extension VN::HASP::HASP4.
+
+0.01  Thu Oct 14 06:55:01 2010
+	- original version; created by h2xs 1.23 with options
+		-b5.8.6 -n VN::HASP::HASP4
+

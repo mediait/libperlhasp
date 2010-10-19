@@ -1,0 +1,6 @@
+Revision history for Perl extension VN::HASP::HASPHL.
+
+0.01  Mon Oct 11 09:31:11 2010
+	- original version; created by h2xs 1.23 with options
+		-n VN::HASP::HASPHL -b 5.8.6
+

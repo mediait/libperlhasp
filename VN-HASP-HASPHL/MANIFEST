@@ -1,0 +1,10 @@
+Changes
+HASPHL.xs
+Makefile.PL
+MANIFEST
+ppport.h
+README
+t/VN-HASP-HASPHL.t
+fallback/const-c.inc
+fallback/const-xs.inc
+lib/VN/HASP/HASPHL.pm
