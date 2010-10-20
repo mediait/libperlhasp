@@ -36,9 +36,10 @@ sub Detect {
 	$res = VN::HASP::HASPHL::GetHaspInfo($tmp);
 	if($res == 1) {
 		$used_module = "HASPHL";
-		$tmp =~ /^.+<hasp id="(\d+)" type="HASP-HL" \/>.+$/s;
-		$ID = $1;
-		VN::HASP::HASPHL::SetFID($FID);
+#		$tmp =~ /^.+<hasp id="(\d+)" type="HASP-HL" \/>.+$/s;
+#		$ID = $1;
+		$ID = 0;
+		VN::HASP::HASPHL::SetFID($FID) if $FID;
 		return $used_module;
 	}
 	return 0;
