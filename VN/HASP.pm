@@ -24,6 +24,7 @@ require VN::HASP::HASPHL;
 
 my $used_module;
 my $ID;
+my $FID = 0;
 
 sub Detect {
 	my $tmp;
@@ -37,6 +38,7 @@ sub Detect {
 		$used_module = "HASPHL";
 		$tmp =~ /^.+<hasp id="(\d+)" type="HASP-HL" \/>.+$/s;
 		$ID = $1;
+		VN::HASP::HASPHL::SetFID($FID);
 		return $used_module;
 	}
 	return 0;

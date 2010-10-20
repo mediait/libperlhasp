@@ -33,7 +33,7 @@ Attached(id = 0)
 	char scope[256];
   CODE:
 	format_scope_string(id != 0 ? id : HASPID, scope);
-	last_error = hasp_login_scope(HASP_DEFAULT_FID, scope, (hasp_vendor_code_t *) vendor_code, &handle);
+	last_error = hasp_login_scope(feature_id, scope, (hasp_vendor_code_t *) vendor_code, &handle);
 	if(last_error == HASP_STATUS_OK) last_error = hasp_logout(handle);
 	RETVAL = last_error == HASP_STATUS_OK ? 1 : 0;
   OUTPUT: 
@@ -54,7 +54,7 @@ EncodeData(data, id = 0)
 	len_full = len < 16 ? 16 : len; 
         New(0, buff, len_full, char); Copy(tmp, buff, len, char);
 	format_scope_string(id != 0 ? id : HASPID, scope);
-	if((last_error = hasp_login_scope(HASP_DEFAULT_FID, scope, (hasp_vendor_code_t *) vendor_code, &handle)) != HASP_STATUS_OK) {
+	if((last_error = hasp_login_scope(feature_id, scope, (hasp_vendor_code_t *) vendor_code, &handle)) != HASP_STATUS_OK) {
 		RETVAL = 0;
 		goto quit;
 	}
@@ -86,7 +86,7 @@ DecodeData(data, id = 0)
 	len_full = len < 16 ? 16 : len; 
         New(0, buff, len_full, char); Copy(tmp, buff, len, char);
 	format_scope_string(id != 0 ? id : HASPID, scope);
-	if((last_error = hasp_login_scope(HASP_DEFAULT_FID, scope, (hasp_vendor_code_t *) vendor_code, &handle)) != HASP_STATUS_OK) {
+	if((last_error = hasp_login_scope(feature_id, scope, (hasp_vendor_code_t *) vendor_code, &handle)) != HASP_STATUS_OK) {
 		RETVAL = 0;
 		goto quit;
 	}
@@ -143,7 +143,7 @@ int ReadBlock(data, length, addr, id = 0)
 	if(addr < 0) addr = 0;
         New(0, buff, length, char);
 	format_scope_string(id != 0 ? id : HASPID, scope);
-	if((last_error = hasp_login_scope(HASP_DEFAULT_FID, scope, (hasp_vendor_code_t *) vendor_code, &handle)) != HASP_STATUS_OK) {
+	if((last_error = hasp_login_scope(feature_id, scope, (hasp_vendor_code_t *) vendor_code, &handle)) != HASP_STATUS_OK) {
 		RETVAL = 0;
 		goto quit;
 	}
@@ -174,7 +174,7 @@ int WriteBlock(data, addr, id = 0)
 	if(addr < 0) addr = 0;
 	buff = SvPV(data, len);
 	format_scope_string(id != 0 ? id : HASPID, scope);
-	if((last_error = hasp_login_scope(HASP_DEFAULT_FID, scope, (hasp_vendor_code_t *) vendor_code, &handle)) != HASP_STATUS_OK) {
+	if((last_error = hasp_login_scope(feature_id, scope, (hasp_vendor_code_t *) vendor_code, &handle)) != HASP_STATUS_OK) {
 		RETVAL = 0;
 		goto quit;
 	}
@@ -223,7 +223,7 @@ GetDateTime(s, min, h, d, mon, y, id = 0)
 	char scope[256];
   CODE:
 	format_scope_string(id != 0 ? id : HASPID, scope);
-	if((last_error = hasp_login_scope(HASP_DEFAULT_FID, scope, (hasp_vendor_code_t *) vendor_code, &handle)) != HASP_STATUS_OK) {
+	if((last_error = hasp_login_scope(feature_id, scope, (hasp_vendor_code_t *) vendor_code, &handle)) != HASP_STATUS_OK) {
 		RETVAL = 0;
 		goto quit;
 	}
@@ -267,7 +267,7 @@ CompareTimeWithCurrent(s, min, h, d, mon, y, res, id = 0)
 	char scope[256];
   CODE:
 	format_scope_string(id != 0 ? id : HASPID, scope);
-	if((last_error = hasp_login_scope(HASP_DEFAULT_FID, scope, (hasp_vendor_code_t *) vendor_code, &handle)) != HASP_STATUS_OK) {
+	if((last_error = hasp_login_scope(feature_id, scope, (hasp_vendor_code_t *) vendor_code, &handle)) != HASP_STATUS_OK) {
 		RETVAL = 0;
 		goto quit;
 	}
@@ -295,8 +295,15 @@ quit:
 	RETVAL
 
 void
-Init(vcode)
+Init(vcode, fid = HASP_DEFAULT_FID)
 	char *vcode;
+	unsigned int fid;
   CODE:
 	strcpy(vendor_code, vcode);
-	
+	feature_id = fid;
+
+void
+SetFID(fid)
+	unsigned int fid;
+  CODE:
+	feature_id = fid;
