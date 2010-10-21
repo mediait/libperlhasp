@@ -50,5 +50,3 @@
 #endif
 
 #endif
-
-#define HASPID 2027128861

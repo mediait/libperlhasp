@@ -23,7 +23,10 @@ require VN::HASP::HASP4;
 require VN::HASP::HASPHL;
 
 my $used_module;
-my $ID;
+
+my $HID = 0;
+my $FID = 0;
+my $PID = 0;
 
 sub Detect {
 	my $tmp;
@@ -32,11 +35,13 @@ sub Detect {
 		$used_module = "HASP4";
 		return $used_module;
 	}
+	VN::HASP::HASPHL::SetHID($HID) if $HID;
+	VN::HASP::HASPHL::SetPID($PID) if $PID;
+	VN::HASP::HASPHL::SetFID($FID) if $FID;
 	$res = VN::HASP::HASPHL::GetHaspInfo($tmp);
 	if($res == 1) {
 		$used_module = "HASPHL";
-		$tmp =~ /^.+<hasp id="(\d+)" type="HASP-HL" \/>.+$/s;
-		$ID = $1;
+		$tmp =~ /^.+<hasp id="(\d+)" type="HASP-HL">.+?<feature id="$FID"/s;
 		return $used_module;
 	}
 	return 0;
@@ -49,7 +54,7 @@ sub Attached {
 		return VN::HASP::HASP4::Attached(@_)
 	} else { # $used_module eq 'HASPHL'
 		my @args = @_;
-		VN::HASP::HASPHL::Attached(@args ? @args : $ID);
+		VN::HASP::HASPHL::Attached(@args);
 		return VN::HASP::HASPHL::LastError();
 	}
 }
@@ -60,7 +65,6 @@ sub EncodeData {
 	if(!$used_module or $used_module eq 'HASP4') {
 		return VN::HASP::HASP4::EncodeData(@_)
 	} else { # $used_module eq 'HASPHL'
-		push @_, $ID if @_ < 2;
 		VN::HASP::HASPHL::EncodeData(@_);
 		return VN::HASP::HASPHL::LastError();
 	}
@@ -72,7 +76,6 @@ sub DecodeData {
 	if(!$used_module or $used_module eq 'HASP4') {
 		return VN::HASP::HASP4::DecodeData(@_)
 	} else { # $used_module eq 'HASPHL'
-		push @_, $ID if @_ < 2;
 		VN::HASP::HASPHL::DecodeData(@_);
 		return VN::HASP::HASPHL::LastError();
 	}
@@ -84,9 +87,7 @@ sub WriteBlock {
 	if(!$used_module or $used_module eq 'HASP4') {
 		return VN::HASP::HASP4::WriteBlock(@_)
 	} else { # $used_module eq 'HASPHL'
-		my @args = @_;
-		push @args, $ID if @args < 3;
-		VN::HASP::HASPHL::WriteBlock(@args);
+		VN::HASP::HASPHL::WriteBlock(@_);
 		return VN::HASP::HASPHL::LastError();
 	}
 }
@@ -97,7 +98,6 @@ sub ReadBlock {
 	if(!$used_module or $used_module eq 'HASP4') {
 		return VN::HASP::HASP4::ReadBlock(@_)
 	} else { # $used_module eq 'HASPHL'
-		push @_, $ID if @_ < 4;
 		VN::HASP::HASPHL::ReadBlock(@_);
 		return VN::HASP::HASPHL::LastError();
 	}
@@ -119,7 +119,6 @@ sub GetDateTime {
 	if(!$used_module or $used_module eq 'HASP4') {
 		return VN::HASP::HASP4::GetDateTime(@_)
 	} else { # $used_module eq 'HASPHL'
-		push @_, $ID if @_ < 7;
 		VN::HASP::HASPHL::GetDateTime(@_);
 		return VN::HASP::HASPHL::LastError();
 	}
@@ -131,9 +130,10 @@ sub Id {
 	if(!$used_module or $used_module eq 'HASP4') {
 		return VN::HASP::HASP4::Id($_[0]);
 	} else { # $used_module eq 'HASPHL'
-		push @_, $ID if @_ < 2;
-		if(VN::HASP::HASPHL::GetHaspInfo(@_)) {
-			$_[0] =~ s/^.+<hasp id="(\d+)" type="HASP-HL" \/>.+$/$1/s;
+		my $tmp;
+		if(VN::HASP::HASPHL::GetHaspInfo($tmp)) {
+			$tmp =~ /^.+<hasp id="(\d+)" type="HASP-HL">.+?<feature id="$FID"/s;
+			$_[0] = $1 || 0;
 		}
 		return VN::HASP::HASPHL::LastError();
 	}

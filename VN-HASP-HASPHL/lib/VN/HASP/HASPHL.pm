@@ -18,7 +18,7 @@ our @ISA = qw(Exporter);
 # If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
 # will save memory.
 our %EXPORT_TAGS = ( 'all' => [ qw(
-	Attached EncodeData DecodeData LastError GetHaspInfo WriteBlock ReadBlock SetDateTime GetDateTime CompareTimeWithCurrent
+	Attached EncodeData DecodeData LastError GetHaspInfo WriteBlock ReadBlock GetDateTime CompareTimeWithCurrent Init SetFID SetPID SetHID
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );

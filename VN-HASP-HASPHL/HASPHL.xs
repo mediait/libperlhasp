@@ -10,8 +10,16 @@
 
 hasp_status_t	last_error;
 
-void format_scope_string(int id, char *scope) {
-	sprintf(scope, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><haspscope><hasp id=\"%d\" /></haspscope>", id);
+void format_scope_string(char *scope) {
+	if(product_id != 0) {
+		if(hasp_id != 0)
+			sprintf(scope, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><haspscope><hasp id=\"%d\" /><product id=\"%d\" /></haspscope>", hasp_id, product_id);
+		else
+			sprintf(scope, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><haspscope><product id=\"%d\" /></haspscope>", product_id);
+	} else if(hasp_id != 0)
+		sprintf(scope, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><haspscope><hasp id=\"%d\" /></haspscope>", hasp_id);
+	else
+		sprintf(scope, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><haspscope />");
 }
 
 MODULE = VN::HASP::HASPHL		PACKAGE = VN::HASP::HASPHL		
@@ -26,13 +34,12 @@ LastError()
 	RETVAL
 
 int
-Attached(id = 0)
-	int id;
+Attached()
   PREINIT:
 	hasp_handle_t   handle;
 	char scope[256];
   CODE:
-	format_scope_string(id != 0 ? id : HASPID, scope);
+	format_scope_string(scope);
 	last_error = hasp_login_scope(feature_id, scope, (hasp_vendor_code_t *) vendor_code, &handle);
 	if(last_error == HASP_STATUS_OK) last_error = hasp_logout(handle);
 	RETVAL = last_error == HASP_STATUS_OK ? 1 : 0;
@@ -41,9 +48,8 @@ Attached(id = 0)
 
 
 int
-EncodeData(data, id = 0)
+EncodeData(data)
 	SV *data;
-	int id;
   PREINIT:
         hasp_handle_t   handle;
 	STRLEN len, len_full;
@@ -53,7 +59,7 @@ EncodeData(data, id = 0)
         tmp = SvPV(data, len);
 	len_full = len < 16 ? 16 : len; 
         New(0, buff, len_full, char); Copy(tmp, buff, len, char);
-	format_scope_string(id != 0 ? id : HASPID, scope);
+	format_scope_string(scope);
 	if((last_error = hasp_login_scope(feature_id, scope, (hasp_vendor_code_t *) vendor_code, &handle)) != HASP_STATUS_OK) {
 		RETVAL = 0;
 		goto quit;
@@ -73,9 +79,8 @@ quit:
         RETVAL
 
 int
-DecodeData(data, id = 0)
+DecodeData(data)
 	SV *data;
-	int id;
   PREINIT:
         hasp_handle_t   handle;
 	STRLEN len, len_full;
@@ -85,7 +90,7 @@ DecodeData(data, id = 0)
         tmp = SvPV(data, len);
 	len_full = len < 16 ? 16 : len; 
         New(0, buff, len_full, char); Copy(tmp, buff, len, char);
-	format_scope_string(id != 0 ? id : HASPID, scope);
+	format_scope_string(scope);
 	if((last_error = hasp_login_scope(feature_id, scope, (hasp_vendor_code_t *) vendor_code, &handle)) != HASP_STATUS_OK) {
 		RETVAL = 0;
 		goto quit;
@@ -105,18 +110,20 @@ quit:
         RETVAL
 
 int
-GetHaspInfo(hasp_info, id = 0)
+GetHaspInfo(hasp_info)
 	SV *hasp_info;
-	int id;
   PREINIT:
 	char *info;
 	char scope[256], view[1024];
     CODE:
-	if(id == 0) sprintf(scope, "<haspscope />\n"); else format_scope_string(id, scope);
+	format_scope_string(scope);
 	sprintf(view, "<haspformat root=\"hasp_info\">\n"
 		"  <hasp>\n"
 		"    <attribute name=\"id\" />\n"
 		"    <attribute name=\"type\" />\n"
+		"      <feature>\n"
+		"        <attribute name=\"id\" />\n"
+		"      </feature>\n"
 		"  </hasp>\n"
 		"</haspformat>\n");
 	if((last_error = hasp_get_info(scope, view, vendor_code, &info)) == HASP_STATUS_OK) {
@@ -129,11 +136,10 @@ GetHaspInfo(hasp_info, id = 0)
     OUTPUT:
         RETVAL
 
-int ReadBlock(data, length, addr, id = 0)
+int ReadBlock(data, length, addr)
 	SV *data;
 	int length;
 	int addr;
-	int id;
   PREINIT:
         hasp_handle_t   handle;
 	char *buff;
@@ -142,7 +148,7 @@ int ReadBlock(data, length, addr, id = 0)
 	if(length < 0) length = 0;
 	if(addr < 0) addr = 0;
         New(0, buff, length, char);
-	format_scope_string(id != 0 ? id : HASPID, scope);
+	format_scope_string(scope);
 	if((last_error = hasp_login_scope(feature_id, scope, (hasp_vendor_code_t *) vendor_code, &handle)) != HASP_STATUS_OK) {
 		RETVAL = 0;
 		goto quit;
@@ -161,10 +167,9 @@ quit:
   OUTPUT:
         RETVAL
 
-int WriteBlock(data, addr, id = 0)
+int WriteBlock(data, addr)
 	SV *data;
 	int addr;
-	int id;
   PREINIT:
         hasp_handle_t   handle;
 	char *buff;
@@ -173,7 +178,7 @@ int WriteBlock(data, addr, id = 0)
   CODE:
 	if(addr < 0) addr = 0;
 	buff = SvPV(data, len);
-	format_scope_string(id != 0 ? id : HASPID, scope);
+	format_scope_string(scope);
 	if((last_error = hasp_login_scope(feature_id, scope, (hasp_vendor_code_t *) vendor_code, &handle)) != HASP_STATUS_OK) {
 		RETVAL = 0;
 		goto quit;
@@ -191,38 +196,20 @@ quit:
         RETVAL
 
 int
-SetDateTime(s, min, h, d, mon, y, id = 0)
-	int s;
-	int min;
-	int h;
-	int d;
-	int mon;
-	int y;
-	int id;
-  PREINIT:
-	int q;
-  CODE:
-	q = s = min = h = d = mon = y = id; q++;
-	RETVAL = 1;
-  OUTPUT:
-	RETVAL
-
-int
-GetDateTime(s, min, h, d, mon, y, id = 0)
+GetDateTime(s, min, h, d, mon, y)
 	SV* s;
 	SV* min;
 	SV* h;
 	SV* d;
 	SV* mon;
 	SV* y;
-	int id;
   PREINIT:
 	hasp_time_t     time;
 	unsigned int    day, month, year, hour, minute, second;
 	hasp_handle_t   handle;
 	char scope[256];
   CODE:
-	format_scope_string(id != 0 ? id : HASPID, scope);
+	format_scope_string(scope);
 	if((last_error = hasp_login_scope(feature_id, scope, (hasp_vendor_code_t *) vendor_code, &handle)) != HASP_STATUS_OK) {
 		RETVAL = 0;
 		goto quit;
@@ -252,7 +239,7 @@ quit:
 	RETVAL
 
 int
-CompareTimeWithCurrent(s, min, h, d, mon, y, res, id = 0)
+CompareTimeWithCurrent(s, min, h, d, mon, y, res)
 	int s;
 	int min;
 	int h;
@@ -260,13 +247,12 @@ CompareTimeWithCurrent(s, min, h, d, mon, y, res, id = 0)
 	int mon;
 	int y;
 	SV* res;
-	int id;
   PREINIT:
 	hasp_time_t     time_hasp, time_usr;
 	hasp_handle_t   handle;
 	char scope[256];
   CODE:
-	format_scope_string(id != 0 ? id : HASPID, scope);
+	format_scope_string(scope);
 	if((last_error = hasp_login_scope(feature_id, scope, (hasp_vendor_code_t *) vendor_code, &handle)) != HASP_STATUS_OK) {
 		RETVAL = 0;
 		goto quit;
@@ -295,15 +281,25 @@ quit:
 	RETVAL
 
 void
-Init(vcode, fid = HASP_DEFAULT_FID)
+Init(vcode)
 	char *vcode;
-	unsigned int fid;
   CODE:
 	strcpy(vendor_code, vcode);
-	feature_id = fid;
 
 void
 SetFID(fid)
 	unsigned int fid;
   CODE:
 	feature_id = fid;
+
+void
+SetPID(pid)
+	unsigned int pid;
+  CODE:
+	product_id = pid;
+
+void
+SetHID(hid)
+	unsigned int hid;
+  CODE:
+	hasp_id = hid;
