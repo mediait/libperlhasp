@@ -21,7 +21,7 @@ install: $(MODULES)
 dist: install
 	if [ -z "$(LIB)" ]; then exit 1; fi 
 	mkdir -p "$(LIB)"	
-	cp -r lib/auto "$(LIB)"
+	cp -r $(CURDIR)/lib/auto "$(LIB)"
 	mkdir -p "$(LIB)/VN/HASP"
-	cp lib/VN/HASP.pm "$(LIB)/VN/"
-	cp lib/VN/HASP/*.pm "$(LIB)/VN/HASP/"
+	cp $(CURDIR)/lib/VN/HASP.pm "$(LIB)/VN/"
+	cp $(CURDIR)/lib/VN/HASP/*.pm "$(LIB)/VN/HASP/"
