@@ -3,3 +3,4 @@ unsigned char vendor_code[] =
 unsigned int feature_id = HASP_DEFAULT_FID;
 unsigned int product_id = 0;
 unsigned int hasp_id = 0;
+

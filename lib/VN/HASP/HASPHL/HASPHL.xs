@@ -70,7 +70,7 @@ EncodeData(data)
 		goto quit;
 	}
 	last_error = hasp_logout(handle);
-	sv_setpvn(data, buff, len);
+	sv_setpvn(data, buff, len_full);
 	SvSETMAGIC(data);
 	RETVAL = (last_error == HASP_STATUS_OK) ? 1 : 0;
 quit:
@@ -101,7 +101,7 @@ DecodeData(data)
 		goto quit;
 	}
 	last_error = hasp_logout(handle);
-	sv_setpvn(data, buff, len);
+	sv_setpvn(data, buff, len_full);
 	SvSETMAGIC(data);
 	RETVAL = (last_error == HASP_STATUS_OK) ? 1 : 0;
 quit:
@@ -284,7 +284,7 @@ void
 Init(vcode)
 	char *vcode;
   CODE:
-	strcpy(vendor_code, vcode);
+	strcpy((char *) vendor_code, vcode);
 
 void
 SetFID(fid)
