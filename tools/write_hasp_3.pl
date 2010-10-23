@@ -47,6 +47,11 @@ sub write_data {
 		print "HASP error: $res\n";
 		exit(1);
 	}
+	my $res = HASPTools::ReadBlock($data, 100, 0);
+	if($res != 0) {
+		print "HASP error: $res\n";
+		exit(1);
+	}
 
 	print "New HSAP data:\n$data\n";
 }
