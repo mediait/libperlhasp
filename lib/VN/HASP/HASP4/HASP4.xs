@@ -67,7 +67,7 @@ DecodeData(data)
 	char *tmp, *buff;
     CODE:
 	tmp = SvPV(data, len);
-	New(0, buff, len, char); Copy(tmp, buff, len, char);
+	Newz(0, buff, len, char); Copy(tmp, buff, len, char);
 	p1 = 0; p2 = len; p4 = (int) buff;
 	hasp(LOCALHASP_DECODEDATA, SEEDCODE, 0, PASS1, PASS2, &p1, &p2, &p3, &p4);
 	RETVAL = p3;
@@ -86,7 +86,7 @@ EncodeData(data)
 	char *tmp, *buff;
     CODE:
 	tmp = SvPV(data, len);
-	New(0, buff, len, char); Copy(tmp, buff, len, char);
+	Newz(0, buff, len, char); Copy(tmp, buff, len, char);
 	p1 = 0; p2 = len; p4 = (int) buff;
 	hasp(LOCALHASP_ENCODEDATA, SEEDCODE, 0, PASS1, PASS2, &p1, &p2, &p3, &p4);
 	RETVAL = p3;
@@ -123,7 +123,7 @@ ReadBlock(data, length, addr)
 	if(addr < 0) addr = 0;
 	p1 = addr / sizeof(WORD); r_a = addr % sizeof(WORD);
 	p2 = (length + r_a) / sizeof(WORD); p2 += (p2*sizeof(WORD) == (length + r_a)) ? 0 : 1;
-	New(0, buff, p2 * sizeof(WORD), char); p4 = (int) buff;
+	Newz(0, buff, p2 * sizeof(WORD), char); p4 = (int) buff;
 	hasp(MEMOHASP_READBLOCK, SEEDCODE, 0, PASS1, PASS2, &p1, &p2, &p3, &p4);
 	sv_setpvn(data, buff + r_a, length);
 	SvSETMAGIC(data);
@@ -147,7 +147,7 @@ WriteBlock(data, addr)
 	tmp = SvPV(data, len);
 	p1 = addr / sizeof(WORD); r_a = addr % sizeof(WORD);
 	p2 = (len + r_a) / sizeof(WORD); p2 += (p2*sizeof(WORD) == (len + r_a)) ? 0 : 1;
-	New(0, buff, p2 * sizeof(WORD), char); p4 = (int) buff;
+	Newz(0, buff, p2 * sizeof(WORD), char); p4 = (int) buff;
 	hasp(MEMOHASP_READBLOCK, SEEDCODE, 0, PASS1, PASS2, &p1, &p2, &p3, &p4);
 	Copy(tmp, buff + r_a, len, char); p4 = (int) buff;
 	hasp(MEMOHASP_WRITEBLOCK, SEEDCODE, 0, PASS1, PASS2, &p1, &p2, &p3, &p4);

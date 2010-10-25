@@ -58,7 +58,7 @@ EncodeData(data)
     CODE:
         tmp = SvPV(data, len);
 	len_full = len < 16 ? 16 : len; 
-        New(0, buff, len_full, char); Copy(tmp, buff, len, char);
+        Newz(0, buff, len_full, char); Copy(tmp, buff, len, char);
 	format_scope_string(scope);
 	if((last_error = hasp_login_scope(feature_id, scope, (hasp_vendor_code_t *) vendor_code, &handle)) != HASP_STATUS_OK) {
 		RETVAL = 0;
@@ -89,7 +89,7 @@ DecodeData(data)
     CODE:
         tmp = SvPV(data, len);
 	len_full = len < 16 ? 16 : len; 
-        New(0, buff, len_full, char); Copy(tmp, buff, len, char);
+        Newz(0, buff, len_full, char); Copy(tmp, buff, len, char);
 	format_scope_string(scope);
 	if((last_error = hasp_login_scope(feature_id, scope, (hasp_vendor_code_t *) vendor_code, &handle)) != HASP_STATUS_OK) {
 		RETVAL = 0;
@@ -147,7 +147,7 @@ int ReadBlock(data, length, addr)
   CODE:
 	if(length < 0) length = 0;
 	if(addr < 0) addr = 0;
-        New(0, buff, length, char);
+        Newz(0, buff, length, char);
 	format_scope_string(scope);
 	if((last_error = hasp_login_scope(feature_id, scope, (hasp_vendor_code_t *) vendor_code, &handle)) != HASP_STATUS_OK) {
 		RETVAL = 0;
