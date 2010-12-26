@@ -22,10 +22,12 @@ sub encode_data {
 	return $data;
 }
 
-
-if(HASPTools::Detect eq 'HASP4') {
+my $hasp_type = HASPTools::Detect;
+if( ! $hasp_type ) {
+	print "No HASP key detected\n";
+} elsif( $hasp_type eq 'HASP4' ) {
 	HASPTools::Init(PASS1, PASS2);
-} else {
+} elsif( $hasp_type eq 'HASPHL' ) {
 	HASPTools::Init(VCODE);
 }
 
@@ -33,6 +35,8 @@ if(@ARGV < 2) {
 	print qq|usage: encode_hasp_3 <src file name> <dst file name>\n|;
 	exit;
 }
+exit 1 if( ! $hasp_type );
+
 my $filename = $ARGV[0];
 open F, $filename or die "Can't open file $filename for reading: $!";
 $/ = '';

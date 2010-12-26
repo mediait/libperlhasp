@@ -30,7 +30,8 @@ my $PID = 0;
 
 sub Detect {
 	my $tmp;
-	my $res = VN::HASP::HASP4::Id($tmp);
+	my $res = -100;
+	$res = VN::HASP::HASP4::Id($tmp);
 	if($res == 0) {
 		$used_module = "HASP4";
 		return $used_module;
@@ -44,7 +45,7 @@ sub Detect {
 		$tmp =~ /^.+<hasp id="(\d+)" type="HASP-HL">.+?<feature id="$FID"/s;
 		return $used_module;
 	}
-	return 0;
+	return ''; # no hasp detected
 }
 
 sub Attached {

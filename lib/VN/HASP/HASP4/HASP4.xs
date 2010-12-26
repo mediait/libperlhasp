@@ -11,7 +11,7 @@
 int _getDateTime(int *s, int *min, int *h, int *d, int *mon, int *y)
 {
 	int p1, p2, p3, p4;
-
+#ifndef _HASPEMU_
 	hasp(TIMEHASP_GETDATE, SEEDCODE, 0, PASS1, PASS2, &p1, &p2, &p3, &p4);
 	if(p3 == 0) {
 		*d = p1; *mon = p2 - 1; *y = p4;
@@ -21,14 +21,16 @@ int _getDateTime(int *s, int *min, int *h, int *d, int *mon, int *y)
 			*s = p1; *min = p2; *h = p4;
 		}
 	}
-
+#else
+	p3 = -100;
+#endif
 	return p3;
 }
 
 int _setDateTime(int s, int min, int h, int d, int mon, int y)
 {
 	int p1, p2, p3, p4;
-
+#ifndef _HASPEMU_
 	p1 = d; p2 = mon+1; p4 = y;
 	if(p4 >= 100) p4 = p4 - 100;
 	hasp(TIMEHASP_SETDATE, SEEDCODE, 0, PASS1, PASS2, &p1, &p2, &p3, &p4);
@@ -36,7 +38,9 @@ int _setDateTime(int s, int min, int h, int d, int mon, int y)
 		p1 = s; p2 = min; p4 = h;               
 		hasp(TIMEHASP_SETTIME, SEEDCODE, 0, PASS1, PASS2, &p1, &p2, &p3, &p4);
 	}
-
+#else
+	p3 = -100;
+#endif
 	return p3;
 }
 
@@ -48,12 +52,16 @@ int
 Attached()
     PREINIT:
 	int p1, p2, p3, p4;
-    CODE:
+	CODE:
+#ifndef _HASPEMU_
 	hasp(LOCALHASP_ISHASP, SEEDCODE, 0, PASS1, PASS2, &p1, &p2, &p3, &p4);
 	if(p1 == 0) { RETVAL = p3 ? p3 : -3; goto quit; }
 	hasp(MEMOHASP_HASPID, SEEDCODE, 0, PASS1, PASS2, &p1, &p2, &p3, &p4);
 	if(p3 != 0) { RETVAL = p3; goto quit; }
 	RETVAL = HASPID - (65536*p2 + p1);
+#else
+	RETVAL = -100;
+#endif
 quit:
     OUTPUT:
 	RETVAL
@@ -66,6 +74,7 @@ DecodeData(data)
 	STRLEN len;
 	char *tmp, *buff;
     CODE:
+#ifndef _HASPEMU_
 	tmp = SvPV(data, len);
 	Newz(0, buff, len, char); Copy(tmp, buff, len, char);
 	p1 = 0; p2 = len; p4 = (int) buff;
@@ -74,7 +83,10 @@ DecodeData(data)
 	sv_setpvn(data, buff, len);
 	SvSETMAGIC(data);
 	Safefree(buff);
-    OUTPUT:
+#else
+	RETVAL = -100;
+#endif
+	OUTPUT:
 	RETVAL
 
 int
@@ -85,6 +97,7 @@ EncodeData(data)
 	STRLEN len;
 	char *tmp, *buff;
     CODE:
+#ifndef _HASPEMU_
 	tmp = SvPV(data, len);
 	Newz(0, buff, len, char); Copy(tmp, buff, len, char);
 	p1 = 0; p2 = len; p4 = (int) buff;
@@ -93,6 +106,9 @@ EncodeData(data)
 	sv_setpvn(data, buff, len);
 	SvSETMAGIC(data);
 	Safefree(buff);
+#else
+	RETVAL = -100;
+#endif
     OUTPUT:
 	RETVAL
 
@@ -101,12 +117,16 @@ Id(id)
 	SV *id;
     PREINIT:
 	int p1, p2, p3, p4;
-    CODE:
+	CODE:
+#ifndef _HASPEMU_
 	hasp(MEMOHASP_HASPID, SEEDCODE, 0, PASS1, PASS2, &p1, &p2, &p3, &p4);
 	sv_setiv(id, p2*65536 + p1);
 	SvSETMAGIC(id);
 	RETVAL = p3;
-    OUTPUT:
+#else
+	RETVAL = -100;
+#endif
+	OUTPUT:
 	RETVAL
 
 int
@@ -119,6 +139,7 @@ ReadBlock(data, length, addr)
 	int r_a;
 	char *buff;
     CODE:
+#ifndef _HASPEMU_
 	if(length < 0) length = 0;
 	if(addr < 0) addr = 0;
 	p1 = addr / sizeof(WORD); r_a = addr % sizeof(WORD);
@@ -129,6 +150,9 @@ ReadBlock(data, length, addr)
 	SvSETMAGIC(data);
 	Safefree(buff);
 	RETVAL = p3;
+#else
+	RETVAL = -100;
+#endif
     OUTPUT:
 	RETVAL
 
@@ -143,6 +167,7 @@ WriteBlock(data, addr)
 	STRLEN len;
 	int r_a;
     CODE:
+#ifndef _HASPEMU_
 	if(addr < 0) addr = 0;
 	tmp = SvPV(data, len);
 	p1 = addr / sizeof(WORD); r_a = addr % sizeof(WORD);
@@ -153,6 +178,9 @@ WriteBlock(data, addr)
 	hasp(MEMOHASP_WRITEBLOCK, SEEDCODE, 0, PASS1, PASS2, &p1, &p2, &p3, &p4);
 	RETVAL = p3;
 	Safefree(buff);
+#else
+	RETVAL = -100;
+#endif
     OUTPUT:
 	RETVAL
 

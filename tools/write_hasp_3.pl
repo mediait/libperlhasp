@@ -47,7 +47,7 @@ sub write_data {
 		print "HASP error: $res\n";
 		exit(1);
 	}
-	my $res = HASPTools::ReadBlock($data, 100, 0);
+	$res = HASPTools::ReadBlock($data, 100, 0);
 	if($res != 0) {
 		print "HASP error: $res\n";
 		exit(1);
@@ -56,17 +56,21 @@ sub write_data {
 	print "New HSAP data:\n$data\n";
 }
 
-
-if(HASPTools::Detect eq 'HASP4') {
+my $hasp_type = HASPTools::Detect;
+if( ! $hasp_type ) {
+	print "No HASP key detected\n";
+} elsif( $hasp_type eq 'HASP4' ) {
 	HASPTools::Init(PASS1, PASS2);
-} else {
+} elsif( $hasp_type eq 'HASPHL' ) {
 	HASPTools::Init(VCODE);
 }
-current_data;
+current_data if( $hasp_type );
 
 if(@ARGV == 0) {
 	print qq|usage: write_hasp_3 <data> [<pos>] [<length>] [<padding_character>]\n\tuse "<data>" if data contains spaces\n|;
 	exit;
 }
+exit 1 if( ! $hasp_type );
+
 write_data($ARGV[0], (@ARGV >= 2) ? $ARGV[1] : 0, (@ARGV >= 3) ? $ARGV[2] : 0, (@ARGV >= 4) ? $ARGV[3] : chr(0xFF));
 

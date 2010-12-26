@@ -1,10 +1,12 @@
 MODULES := HASP4 HASPHL
+
 all: $(MODULES)
 
 define MAKE_PERLXS
 $(1): $(SUBDIR)$(1)/blib/arch/auto/VN/HASP/$(1)/$(1).so
 $(SUBDIR)$(1)/blib/arch/auto/VN/HASP/$(1)/$(1).so:
-	cd $(SUBDIR)$(1) && perl Makefile.PL INSTALL_BASE=./build && make && make install
+#	cd $(SUBDIR)$(1) && perl Makefile.PL INSTALL_BASE=./build && make && make install
+	cd $(SUBDIR)$(1) && perl Makefile.PL PREFIX=./build && make && make install
 endef
 
 $(foreach D,$(MODULES),$(eval $(call MAKE_PERLXS,$(D))))
@@ -19,10 +21,10 @@ INSTALL := install
 define INSTALL_PERLXS
 install-$(1):
 	mkdir -p "$(BINDIR)VN/HASP/$(1)/"
-	$(INSTALL) -m 644 $(SUBDIR)$(1)/build/lib/perl5/*/auto/VN/HASP/$(1)/.[^.]* $(BINDIR)VN/HASP/$(1)/
-	$(INSTALL) -m 644 $(SUBDIR)$(1)/build/lib/perl5/*/auto/VN/HASP/$(1)/* $(BINDIR)VN/HASP/$(1)/
-	$(INSTALL) -m 755 $(SUBDIR)$(1)/build/lib/perl5/*/auto/VN/HASP/$(1)/*.so $(BINDIR)VN/HASP/$(1)/
-	$(INSTALL) -m 644 $(SUBDIR)$(1)/build/lib/perl5/*/VN/HASP/$(1).pm $(LIBDIR)VN/HASP/
+	$(INSTALL) -m 644 $(SUBDIR)$(1)/build/lib/auto/VN/HASP/$(1)/.[^.]* $(BINDIR)VN/HASP/$(1)/
+	$(INSTALL) -m 644 $(SUBDIR)$(1)/build/lib/auto/VN/HASP/$(1)/* $(BINDIR)VN/HASP/$(1)/
+	$(INSTALL) -m 755 $(SUBDIR)$(1)/build/lib/auto/VN/HASP/$(1)/*.so $(BINDIR)VN/HASP/$(1)/
+	$(INSTALL) -m 644 $(SUBDIR)$(1)/build/lib/VN/HASP/$(1).pm $(LIBDIR)VN/HASP/
 endef
 
 $(foreach D,$(MODULES),$(eval $(call INSTALL_PERLXS,$(D))))

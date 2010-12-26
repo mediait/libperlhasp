@@ -1,14 +1,19 @@
+#!/usr/bin/perl -w
 use strict;
+use ExtUtils::testlib;
 use VN::HASP::HASPHL qw ( Attached EncodeData DecodeData LastError GetHaspInfo WriteBlock ReadBlock );
 
-my $id = 723193772; # 0
+#my $id = 723193772; # 0
+my $id = 0;
 
 my $data1 = 'qwertyuiopasdfghjklzxcvbnm';
 my $data2 = 'qwerty';
 my $buff;
 
 sub main {
-	my $res = Attached($id);
+	my $res;
+	#$res = Attached($id);
+	$res = Attached();
 	print "Key is " . ($res ? "attached" : "not attached") . "\n";
 	return 0 unless $res;
 

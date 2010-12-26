@@ -2,6 +2,16 @@ use 5.008006;
 use ExtUtils::MakeMaker;
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
+
+if( $^O =~ /^(linux|darwin)$/ &&
+	system('./install_lib.sh') != 0 ) {
+	exit $?;	
+}
+
+my $arch = ($^O =~ /^(linux|darwin)$/) ? 
+		( `uname -p | grep x86_64` ? 'x86_64' : 'x86' ) :
+		( 'unknown' ); 
+
 WriteMakefile(
     NAME              => 'VN::HASP::HASPHL',
     VERSION_FROM      => 'lib/VN/HASP/HASPHL.pm', # finds $VERSION
@@ -10,13 +20,20 @@ WriteMakefile(
       (ABSTRACT_FROM  => 'lib/VN/HASP/HASPHL.pm', # retrieve abstract from module
        AUTHOR         => 'root <root@suse.de>') : ()),
     ($^O eq 'MSWin32' ?
-	('OBJECT'		=> '$(O_FILES) hasp\libhasp_windows.lib') :
-	('OBJECT'		=> '$(O_FILES) hasp/libhasp_linux.a')),
-    LIBS              => [''], # e.g., '-lm'
-    DEFINE            => '', # e.g., '-DHAVE_SOMETHING'
-    INC               => '-I.', # e.g., '-I. -I/usr/include/other'
-	# Un-comment this if you add C files to link with later:
-    # OBJECT            => '$(O_FILES)', # link all the C files too
+	  ('OBJECT'		=> '$(O_FILES) hasp\libhasp_windows.lib') :
+	  (( $arch eq 'x86_64' ) ?
+#		('OBJECT'		=> '$(O_FILES) hasp/libhasp_linux_x86_64_108230.a') :
+		('OBJECT'		=> '$(O_FILES)' ) :
+		('OBJECT'		=> '$(O_FILES) hasp/libhasp_linux_108230.a'))
+    ),
+	($arch eq 'x86_64' ?
+      ('LIBS'           => [ '-lhasp_linux_x86_64_108230' ] ) : 
+#     ('LIBS'           => [ '-lhasp_linux_108230' ] )
+      ('LIBS'           => [ '' ] )
+    ),
+   #PERL_INSTALL_ROOT	=> './build',
+   DEFINE            => '', # e.g., '-DHAVE_SOMETHING'
+   INC               => '-I.', # e.g., '-I. -I/usr/include/other'
 );
 if  (eval {require ExtUtils::Constant; 1}) {
   # If you edit these definitions to change the constants used by this module,
