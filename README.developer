@@ -1,0 +1,20 @@
+source/
+|-- bin
+|   `-- edit-haspd-conf.pl          haspd.conf editor    
+|-- etc
+|   `-- init.d
+|       `-- hasp                    haspd launcher
+|-- lib
+|   |-- Filter
+|   |   `-- MMP.pm                  needed by...
+|   `-- MMP
+|       `-- Log.pm                  ...log
+|-- sbin
+|   `-- haspd.pl    		    haspd daemon    
+`-- usr
+    `-- local
+        `-- mmp
+            `-- conf
+                `-- vidihaspd.conf  default config
+
+, also there r aksusbd rpms and VN-HASP and HASPemu in ./redist/

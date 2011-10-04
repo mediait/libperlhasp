@@ -1,0 +1,137 @@
+#! /bin/sh
+#
+# /etc/init.d/hasp
+#
+
+### BEGIN INIT INFO
+# Provides:       haspd
+# Required-Start: $local_fs $network aksusbd
+# Required-Stop:
+# Default-Start:  3 5
+# Default-Stop:
+# Description:    VIDI HASP Driver Watchdog Service
+### END INIT INFO
+
+MMPHOME=~mmp
+SBIN_DIR=$MMPHOME/sbin
+PRODUCT="haspd"
+DAEMON_FILE_NAME=$PRODUCT
+DAEMON_FILE=$SBIN_DIR/$DAEMON_FILE_NAME
+CONF_DIR=$MMPHOME/conf
+CONF_FILE=$CONF_DIR/$PRODUCT.conf
+LOG_DIR=$MMPHOME/var/log
+DAEMON_OUT_FILE=$LOG_DIR/$PRODUCT.out.log
+START_CMD_ARGS="--mmphome=$MMPHOME --config=$CONF_FILE -v"
+
+#####################################################################
+# Tivoli System Automation return codes
+UNKNOWN=0
+ONLINE=1
+OFFLINE=2
+FAILED_OFFLINE=3
+#####################################################################
+
+RC=${UNKNOWN}
+# Shell functions sourced from /etc/rc.status:
+#      rc_check         check and set local and overall rc status
+#      rc_status        check and set local and overall rc status
+#      rc_status -v     ditto but be verbose in local rc status
+#      rc_status -v -r  ditto and clear the local rc status
+#      rc_failed        set local and overall rc status to failed
+#      rc_failed <num>  set local and overall rc status to <num><num>
+#      rc_reset         clear local rc status (overall remains)
+#      rc_exit          exit appropriate to overall rc status
+. /etc/rc.status
+
+# First reset status of this service
+rc_reset
+
+# Return values acc. to LSB for all commands but status:
+# 0 - success
+# 1 - generic or unspecified error
+# 2 - invalid or excess argument(s)
+# 3 - unimplemented feature (e.ga "reload")
+# 4 - insufficient privilege
+# 5 - program is not installed
+# 6 - program is not configured
+# 7 - program is not running
+# 
+# Note that starting an already running service, stopping
+# or restarting a not-running service as well as the restart
+# with force-reload (in case signalling is not supported) are
+# considered a success.
+
+function start {
+	if [ -e $DAEMON_OUT_FILE ]; then
+		mv $DAEMON_OUT_FILE $DAEMON_OUT_FILE.bak
+	fi
+	INIT_FAIL_REASON=
+	echo -n "Starting ${PRODUCT} "
+	# if an old state file is around, we use this, this makes
+	# it easier to start/stop a faild without loosing all
+	# the state. But note that a slave will take over a service,
+	# if it can no longer talk to the faild. You have to stop
+	# all services that are UP
+        # ps ax | grep -P "(haspd)" | grep -v grep >/dev/null
+	checkproc $DAEMON_FILE
+        if [ $? -eq 0 ]; then
+                RC=${ONLINE}
+        else
+		CMD="$DAEMON_FILE $START_CMD_ARGS"
+		echo $CMD > $DAEMON_OUT_FILE
+		$CMD >>$DAEMON_OUT_FILE 2>&1 &
+#		$DAEMON_FILE --mmphome=$MMPHOME --config=$CONF_FILE >$DAEMON_OUT_FILE 2>&1 &
+		RC=$?
+		# if daemon was started
+		if [ $RC == 0 ]; then
+			# wait while it parse args, read config and actually start to work...
+			sleep 1
+			# check if it is still alive
+			checkproc $DAEMON_FILE
+			RC=$?
+			if [ $RC != 0 ]; then
+				INIT_FAIL_REASON="$PRODUCT was started, but died because of init errors. See log in $DAEMON_OUT_FILE"
+				RC=$OFFLINE
+			else
+				RC=$ONLINE
+			fi	
+		else
+			RC=${OFFLINE}
+		fi
+        fi
+	# Remember status and be verbose
+	rc_status -v
+	if [ "$INIT_FAIL_REASON" != "" ]; then
+		echo $INIT_FAIL_REASON
+	fi
+}
+function stop {
+	echo -n "Shutting down ${PRODUCT} "
+	killall $DAEMON_FILE_NAME
+	RC=$?
+	# Remember status and be verbose
+	rc_status -v
+}
+function status {
+	echo -n "Checking for ${PRODUCT}: "
+	checkproc $DAEMON_FILE
+	rc_status -v
+}
+
+case "$1" in
+    start)
+	    start
+	    ;;
+    stop)
+	    stop
+	    ;;
+    status)
+	    status
+	    ;;
+    *)
+	    echo "Usage: $0 {start|stop|status}"
+	    exit 1
+	    ;;
+esac
+exit $RC
+
