@@ -10,7 +10,7 @@ my $EXAMPLES = 	"  $0 add aksusbd start = /etc/init.d/aksusbd start\n".
 		"  $0 del aksusbd\n";
 my $OPTIONS = 	"  -h       - show this\n".
 		"  -v       - be verbose\n".
-		"  --config - config file to edit, creates it if not exists, default is ~mmp/usr/local/conf/haspd.conf\n";
+		"  --config - config file to edit, creates it if not exists, default is /etc/haspd.conf\n";
 my $ADD = 	"  add - add records to config file, creates new <service> section if needed\n".
 		"        <service>  - service daemon name (or any unique string:)\n".
 		"        <cmd>      - (start|stop|restart)\n".
@@ -47,10 +47,7 @@ while(my $arg = shift @ARGV){
 	}
 }
 
-unless($CFG_FILE){
-	my $mmphome = $ENV{MMPHOME} ? $ENV{MMPHOME} : glob('~mmp');
-	$CFG_FILE = "$mmphome/conf/haspd.conf";
-}
+$CFG_FILE = "/etc/haspd.conf" unless $CFG_FILE;
 
 eval { 
 	my $services = read_config($CFG_FILE);

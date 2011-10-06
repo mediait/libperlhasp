@@ -9,19 +9,18 @@
 # Required-Stop:
 # Default-Start:  3 5
 # Default-Stop:
-# Description:    VIDI HASP Driver Watchdog Service
+# Description:    HASP Driver Watchdog Service
 ### END INIT INFO
 
-MMPHOME=~mmp
-SBIN_DIR=$MMPHOME/sbin
+SBIN_DIR=/usr/local/sbin
 PRODUCT="haspd"
 DAEMON_FILE_NAME=$PRODUCT
 DAEMON_FILE=$SBIN_DIR/$DAEMON_FILE_NAME
-CONF_DIR=$MMPHOME/conf
+CONF_DIR=/etc
 CONF_FILE=$CONF_DIR/$PRODUCT.conf
-LOG_DIR=$MMPHOME/var/log
+LOG_DIR=/var/log
 DAEMON_OUT_FILE=$LOG_DIR/$PRODUCT.out.log
-START_CMD_ARGS="--mmphome=$MMPHOME --config=$CONF_FILE -v"
+START_CMD_ARGS="--config=$CONF_FILE --log-level=1 -v"
 
 #####################################################################
 # Tivoli System Automation return codes
@@ -80,7 +79,6 @@ function start {
 		CMD="$DAEMON_FILE $START_CMD_ARGS"
 		echo $CMD > $DAEMON_OUT_FILE
 		$CMD >>$DAEMON_OUT_FILE 2>&1 &
-#		$DAEMON_FILE --mmphome=$MMPHOME --config=$CONF_FILE >$DAEMON_OUT_FILE 2>&1 &
 		RC=$?
 		# if daemon was started
 		if [ $RC == 0 ]; then

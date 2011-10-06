@@ -3,22 +3,27 @@ use strict;
 # config files is perl code (dumped with Data::Dumper)
 
 use FindBin;
-use lib "$FindBin::Bin/../../VN-HASP/lib";
-use lib "$FindBin::Bin/../lib";
-require VN::HASP; 
-use MMP::Log;
+use VN::HASP; 
+#use lib "/home/shem/prj/libperlhasp/source/lib";
+use VIDI::Log;
 
 $| = 1;
 
-my $USAGE = "USAGE: $0 [--mmphome=~mmp] [--config=~mmp/conf/haspd.conf] [-v] [-h]";
+my $USAGE = 	"USAGE:\n".
+		"  $0 [--config=/etc/haspd.conf] [--log-level=1] [-v] [-h]\n".
+		"OPTIONS:\n".
+		"  --config     - config file to use, default is /etc/haspd.conf\n".
+		"  --log-level  - log level to use, default is 1\n".
+		"  -v           - be verbose in stdout and stderr\n".
+		"  -h           - u know\n";
 
-my ($MMPHOME, $CFG_FILE, $VERBOSE);
+my ($CFG_FILE, $LOG_LEVEL, $VERBOSE);
 while(my $arg = shift @ARGV){
-	if($arg =~ /^\s*--mmphome=(\S+)\s*$/){
-		$MMPHOME = $1;
-	}
-	elsif($arg =~ /^\s*--config=(\S+)\s*/){
+	if($arg =~ /^\s*--config=(\S+)\s*/){
 		$CFG_FILE = $1;
+	}
+	elsif($arg =~ /^\s*--log-level=(\d)\s*/){
+		$LOG_LEVEL = $1;
 	}
 	elsif($arg =~ /^\s*-v\s*/){
 		$VERBOSE = 1;
@@ -33,11 +38,7 @@ while(my $arg = shift @ARGV){
 		exit 1;
 	}
 }
-unless ($MMPHOME){
-	$MMPHOME = $ENV{MMPHOME} ? $ENV{MMPHOME} : glob('~mmp');
-}
-$CFG_FILE = "$MMPHOME/conf/haspd.conf" unless $CFG_FILE;
-die "MMP home dir $MMPHOME not exists" unless -e $MMPHOME;
+$CFG_FILE = "/etc/haspd.conf" unless $CFG_FILE;
 print "reading config at $CFG_FILE... " if $VERBOSE;
 my %SERVICES = %{fix_config(read_config($CFG_FILE))};
 
@@ -51,7 +52,6 @@ my $AKSUSBD = {
 };
 
 if($VERBOSE){
-	print "MMPHOME  = $MMPHOME\n";
 	print "CFG_FILE = $CFG_FILE\n";
 	foreach my $service ($AKSUSBD, sort services_by_name values %SERVICES){
 		print "$service->{name}\n";
@@ -61,8 +61,8 @@ if($VERBOSE){
 	}
 }
 
-$VIDI::Log::LOG_LEVEL = 1;
-my $LOG = new VIDI::Log($MMPHOME);
+$VIDI::Log::LOG_LEVEL = $LOG_LEVEL;
+my $LOG = new VIDI::Log("");
 
 my $CONTINUE = 1;
 

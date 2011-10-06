@@ -4,17 +4,13 @@
 # Copyright (C) 2003 MeditProfi
 #
 
-package MMP::Log;
+package VIDI::Log;
 use strict;
 
 use Fcntl ':flock';
 use VIDI::Flock ':all';
 
 use Encode;
-
-use FindBin;
-use lib "$FindBin::Bin/..";
-use Filter::MMP;
 
 # log rotate constants #########################################################
 use constant MAX_LOG_SIZE => 4000000; 	   # max size for other *.log files
@@ -46,6 +42,7 @@ sub new {
 	my $proto = shift;
 	my $class = ref($proto) || $proto;
 	my $home = shift || (defined($ENV{MMPHOME}) ? $ENV{MMPHOME} : '');
+	print "VIDI LOG HOME: $home\n";
 
 	my $self = { MMPHOME => $home };
 	bless($self, $class);
@@ -121,14 +118,11 @@ sub msg {
 #			$t[3], $t[4] + 1, ($t[5] > 100) ? ($t[5] - 100) : $t[5], 
 #			$t[2], $t[1], $t[0], $$, (caller(1))[0], (caller(1))[2], $msg);
 	} elsif($type eq 'HASPD_LEVEL') {
-		$log_file .= "/vidihaspd";
+		$log_file .= "/haspd";
 		$log_string = sprintf("%02d.%02d.%04d %02d:%02d:%02d: %s\n", 
 			$t[3], $t[4] + 1, 1900 + $t[5], 
 			$t[2], $t[1], $t[0], $msg);
 	} elsif($type eq 'UI_LEVEL') {
-=ifndef WITH_MOD_MONITORING
-		return 0;
-=endif
 		$log_file .= "/ui";
 		$log_string = sprintf("%02d.%02d.%04d %02d:%02d:%02d %d %s\n", 
 			$t[3], $t[4] + 1, 1900 + $t[5], 
@@ -254,7 +248,7 @@ sub msg_new {
 	} elsif($type eq 'UI_LEVEL') {
 		$log_file .= "/ui";
 	} elsif($type eq 'HASPD_LEVEL') {
-		$log_file .= "/vidihaspd";
+		$log_file .= "/haspd";
 	} elsif($type eq 'TIVOLI_LEVEL') {
 		$log_file .= "/tivoli";
 	} elsif($type eq 'WATCHDOG_LEVEL') {
