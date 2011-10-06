@@ -5,7 +5,7 @@ use strict;
 use FindBin;
 use VN::HASP; 
 #use lib "/home/shem/prj/libperlhasp/source/lib";
-use VIDI::Log;
+use GNF::Log;
 
 $| = 1;
 
@@ -61,8 +61,8 @@ if($VERBOSE){
 	}
 }
 
-$VIDI::Log::LOG_LEVEL = $LOG_LEVEL;
-my $LOG = new VIDI::Log("");
+$GNF::Log::LOG_LEVEL = $LOG_LEVEL;
+my $LOG = new GNF::Log("");
 
 my $CONTINUE = 1;
 

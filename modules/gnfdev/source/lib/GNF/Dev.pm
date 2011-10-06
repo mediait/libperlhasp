@@ -1,10 +1,10 @@
-package VIDI::Dev;
+package GNF::Dev;
 use strict;
 use base "Exporter";
 our @EXPORT_OK = qw(&read_cfg &roll_dist &clean_dist &print_dists);
-use VIDI::Config;
-use VIDI::Dev::Utils qw(get_host_arch get_host_slesno cmd);
-use VIDI::Dev::Objects;
+use GNF::Config;
+use GNF::Dev::Utils qw(get_host_arch get_host_slesno cmd);
+use GNF::Dev::Objects;
 
 use IPC::System::Simple qw(system);
 use Cwd;
@@ -15,7 +15,7 @@ sub read_cfg{
 	my $cfg_file = $prj_cfg->{"cfg-file"};
 	die "$cfg_file not exists" unless -e $cfg_file;
 	print "reading config from $cfg_file\n";
-	my $cfg = new VIDI::Config $cfg_file;
+	my $cfg = new GNF::Config $cfg_file;
 	die "failed read $cfg_file" unless defined $cfg;
 	my $slug = $cfg->GetNodeValue("SLUG", "");
 	my $version = $cfg->GetNodeValue("VERSION", "");

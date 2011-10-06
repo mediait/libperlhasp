@@ -1,8 +1,8 @@
-package VIDI::Dev::libperlhasp;
+package GNF::Dev::libperlhasp;
 use strict;
-use base "VIDI::Dev::Objects";
+use base "GNF::Dev::Objects";
 
-use VIDI::Dev::Utils qw(cmd get_host_slesno get_host_arch);
+use GNF::Dev::Utils qw(cmd get_host_slesno get_host_arch);
 
 use Cwd;
 use File::Basename;
@@ -14,17 +14,13 @@ sub choose_aksusbd{
 #	$self->show("choose aksusbd");
 	my $cfg = shift;
 	my $slesno = $cfg->{slesno} || get_host_slesno;
-	my $rule = File::Find::Rule
-			->extras({follow => 1})
-			->file
-			->maxdepth(2);
 	if($slesno >= 10){
-		print "choosing aksusbd-1.15-1.i386-x86_64.rpm\n";
- 		return $self->find( $rule->name( 'aksusbd-1.15-1.i386-x86_64.rpm'));
+		print "  choosing aksusbd-1.15-1.i386-x86_64.rpm\n";
+		return $self->dir( "redist")->files( 'aksusbd-1.15-1.i386-x86_64.rpm');
 	}
 	else{
-		print "choosing aksusbd-suse-1.14-3.i386.rpm\n";
- 		return $self->find( $rule->name( 'aksusbd-suse-1.14-3.i386.rpm'));
+		print "  choosing aksusbd-suse-1.14-3.i386.rpm\n";
+ 		return $self->dir( "redist")->files( 'aksusbd-suse-1.14-3.i386.rpm');
 	}	
 }
 
@@ -34,17 +30,13 @@ sub choose_hasp{
 	my $cfg = shift;
 	my $haspid = $cfg->{haspid};
 #	$self->show("choose_hasp");
-	my $rule = File::Find::Rule
-			->extras({follow => 1})
-			->directory
-			->maxdepth(2);
 	if($haspid eq "NOHASP"){
-		print "choosing HASPemu\n";
-		return $class->are( $rule->name('HASPemu')->in(@$self));
+		print "  choosing HASPemu\n";
+		return $self->dir("redist")->dir("HASPemu");
 	}
 	else{
-		print "choosing VN-HASP\n";
-		return $class->are( $rule->name('VN-HASP')->in(@$self));
+		print "  choosing VN-HASP\n";
+		return $self->dir("redist")->dir("VN-HASP");
 	}
 }
 
@@ -81,14 +73,14 @@ sub fry{
 		else{
 			die "unknown hasp '$cfg->{hasp}'";
 		}
-		return VIDI::Dev::Objects->from("$self->[0]/dist");
+		return GNF::Dev::Objects->from("$self->[0]/dist");
 	}
 	elsif($self->[0] =~ /HASPemu$/){
 		system "cd $self->[0] && perl Makefile.PL PREFIX=dist";
 		system "make -C $self->[0]";
 		system "make -C $self->[0] install";
 		system "rm -f $self->[0]/dist/lib/perllocal.pod";
-		return VIDI::Dev::Objects->from("$self->[0]/dist/lib");
+		return GNF::Dev::Objects->from("$self->[0]/dist/lib");
 	}
 	else{
 		die "something went very wrong";

@@ -2,8 +2,8 @@
 use strict;
 
 use FindBin;
-use lib "$FindBin::Bin/modules/vididev/source/lib";
-use VIDI::Dev::Utils qw(get_host_slesno);
+use lib "$FindBin::Bin/modules/gnfdev/source/lib";
+use GNF::Dev::Utils qw(get_host_slesno);
 
 my $SLESNO = get_host_slesno; 
 while(my $arg = shift @ARGV){

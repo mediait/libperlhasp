@@ -4,7 +4,7 @@
 # Copyright (C) 2003 MeditProfi
 #
 
-package VIDI::Log;
+package GNF::Log;
 use strict;
 
 use Fcntl ':flock';
@@ -42,7 +42,6 @@ sub new {
 	my $proto = shift;
 	my $class = ref($proto) || $proto;
 	my $home = shift || (defined($ENV{MMPHOME}) ? $ENV{MMPHOME} : '');
-	print "VIDI LOG HOME: $home\n";
 
 	my $self = { MMPHOME => $home };
 	bless($self, $class);

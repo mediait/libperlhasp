@@ -2,7 +2,7 @@
 #
 # $Id$
 #
-# VIDI MMP Configuration parser library
+# GNF MMP Configuration parser library
 # Copyright (C) 2004 MeditProfi
 #
 # Configuration file format
@@ -47,13 +47,13 @@
 # }
 #
 
-package VIDI::Config;
+package GNF::Config;
 
 use strict;
 #use Carp qw ( shortmess );
 use Carp qw ( shortmess longmess );
 use Fcntl ':flock';
-use VIDI::Flock ':all';
+use GNF::Flock ':all';
 use Encode;
 
 sub new {

@@ -16,12 +16,12 @@ Next code is almost all u need 2 do to use new libperlhasp from setup.pl of lrvf
 # I decided 2 hold git submodules in submodule dir 
 	use lib "modules/libperlhasp/source/lib"; 
 # 4 libperlhasp.pm able 2 find it's prereqs
-	use lib "modules/libperlhasp/modules/vididev/source/lib"; 
+	use lib "modules/libperlhasp/modules/gnfdev/source/lib"; 
 	
-	use VIDI::Dev::libperlhasp;
+	use GNF::Dev::libperlhasp;
 	
 	print "Prepare aksusbd and hasp...\n";
-	my $libperlhasperlhasp = VIDI::Dev::libperlhasp->at("modules/libperlhasp");
+	my $libperlhasperlhasp = GNF::Dev::libperlhasp->at("modules/libperlhasp");
 	$libperlhasp
 # choose rpm according thingso SuSE maj ver number
 		->choose_aksusbd({slesno => $slesno})    
@@ -40,7 +40,7 @@ Next code is almost all u need 2 do to use new libperlhasp from setup.pl of lrvf
 # next part is nogood yet... 
 # lib 2 lib, sbin 2 sbin, ash to ash
 	$libperlhasp->files('haspd.pl')->cp("$BINDIR/sbin");
-	$libperlhasp->files('Log.pm')->cp("$BINDIR/lib/VIDI");
+	$libperlhasp->files('Log.pm')->cp("$BINDIR/lib/GNF");
 # and cp all other staff 2 bin_dir/redist
 	$libperlhaspasperlhasp->files('haspd.conf')->cp("$BINDIR/redist/etc");
 	$libperlhasp->files('hasp')->cp("$BINDIR/redist/etc/init.d");
@@ -79,7 +79,7 @@ source/
 |   `-- init.d
 |       `-- hasp 		haspd launcher
 |-- lib
-|   `-- VIDI
+|   `-- GNF
 |       `-- Log.pm 		another one 'local' MMP::Log
 |       `-- Dev
 |           `-- libperlhasp.pm 	setup/make/install helper 4 those prjs who wanna have hasp
@@ -96,16 +96,16 @@ redist/
 `-- VN-HASP 				else
 
 ******
-modules dir here because I wanna move module vididev in independent repos
+modules dir here because I wanna move module gnfdev in independent repos
 ******
 modules/
-`-- vididev 					helper to dist creation process
+`-- gnfdev 					helper to dist creation process
     `-- source
         `-- lib
-            `-- VIDI
+            `-- GNF
                 |-- Config.pm 			another one 'local' MMP::Config
                 |-- Dev
-                |   |-- Objects.pm 		base 4 VIDI::Dev::libperlhasp
+                |   |-- Objects.pm 		base 4 GNF::Dev::libperlhasp
                 |   `-- Utils.pm 		get_host_slesno, get_host_arch etc.
                 `-- Dev.pm 			main subs: read config, name dist etc.
 

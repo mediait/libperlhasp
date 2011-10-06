@@ -1,4 +1,4 @@
-package VIDI::Dev::Utils;
+package GNF::Dev::Utils;
 
 use base "Exporter";
 our @EXPORT_OK = qw(install_rpm get_host_slesno get_host_arch cmd);

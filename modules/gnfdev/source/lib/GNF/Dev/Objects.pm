@@ -1,7 +1,7 @@
-package VIDI::Dev::Objects;
+package GNF::Dev::Objects;
 use strict;
 
-use VIDI::Dev::Utils qw(cmd);
+use GNF::Dev::Utils qw(cmd);
 
 use File::Basename;
 use Tie::File;
@@ -49,6 +49,12 @@ sub at{
 	return $class->are($at);
 }
 
+sub as{
+	my $self = shift;
+	my $class = shift;
+	return bless $self, $class;
+}
+
 sub each{
 	my $self = shift;
 	my $class = ref $self;
@@ -76,12 +82,11 @@ sub each{
 		push @objs, $obj if defined $obj;
 	}
 	if(ref $action eq "CODE"){
-		return VIDI::Dev::Objects->are(@objs);
+		return GNF::Dev::Objects->are(@objs);
 	}
 	return $self;
 }
 
-# it's fail 'cause File::Find::Rule exports its own 'find':)
 sub find{
 	my $self = shift;
 	my $class = ref $self;
@@ -89,12 +94,22 @@ sub find{
 	return $class->are($rule->extras({follow => 1})->in(@$self));
 }
 
-# shortcut 2 ->find(File::Find::Rule->file)
 sub files{
 	my $self = shift;
-	my $pattern = shift;
-	return $self->find(File::Find::Rule->file) unless $pattern;
-	return $self->find(File::Find::Rule->file->name($pattern));
+	return $self->find(File::Find::Rule->file) unless @_;
+	return $self->find(File::Find::Rule->file->name(@_));
+}
+
+sub dirs{
+	my $self = shift;
+	return $self->find(File::Find::Rule->directory) unless @_;
+	return $self->find(File::Find::Rule->directory->name(@_));
+}
+
+sub dir{
+	my $self = shift;
+	my $dirname = shift;
+	return $self->find(File::Find::Rule->directory->maxdepth(1)->name($dirname));
 }
 
 sub cp{
@@ -155,7 +170,7 @@ sub graft{
 }
 
 sub _cp{
-	system sprintf "cp%s $_[0] $_[1]", -d $_[0] ? " -r" : "";
+	system sprintf "cp -f%s $_[0] $_[1]", -d $_[0] ? "r" : "";
 }
 
 sub patch{
@@ -185,8 +200,8 @@ sub show{
 	return $self;
 }
 
-package VIDI::Dev::CprogDirs;
-use base "VIDI::Dev::Objects";
+package GNF::Dev::CprogDirs;
+use base "GNF::Dev::Objects";
 use File::Basename;
 use IPC::System::Simple qw(system);
 
@@ -218,8 +233,8 @@ sub make{
 	);
 }
 
-package VIDI::Dev::Pprogs;
-use base "VIDI::Dev::Objects";
+package GNF::Dev::Pprogs;
+use base "GNF::Dev::Objects";
 use File::Basename;
 use IPC::System::Simple qw(system);
 
