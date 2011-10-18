@@ -1,72 +1,7 @@
 ******
 HOWTO use new libperlhasp
 ******
-1.
-First of all - u need IPC::System::Simple and File::Find::Rule (with some dependencies)
-IPC::System::Simple allow 2 die on 'system("some bad cmd")' fail.
-File::Find::Rule is simple iface 2 File::Find.
-Use cpan or find 'em in redist.
-
-2.
-I tried 2 hold each specific 4 libperlhasp things inside itself.
-Next code is almost all u need 2 do to use new libperlhasp from setup.pl of lrvfarm 4 example:
-
-==================================================================================================
-# libperlhasp include
-# I decided 2 hold git submodules in submodule dir 
-	use lib "modules/libperlhasp/source/lib"; 
-# 4 libperlhasp.pm able 2 find it's prereqs
-	use lib "modules/libperlhasp/modules/gnfdev/source/lib"; 
-	
-	use GNF::Dev::libperlhasp;
-	
-	print "Prepare aksusbd and hasp...\n";
-	my $libperlhasperlhasp = GNF::Dev::libperlhasp->at("modules/libperlhasp");
-	$libperlhasp
-# choose rpm according thingso SuSE maj ver number
-		->choose_aksusbd({slesno => $slesno})    
-# cp requested rpm 2 bin_dir/redist/usr/local/redist
-		->cp("$BINDIR/redist/usr/local/redist"); 
-	
-	$libperlhasp 
-# choose hasp type (VN-HASP/HASPemu)HASPemu->cp("$BINDIR/src/libperlhasp") 
-		->choose_hasp( { haspid => $d->{HASPID} } )
-# setup/build. 'fry' because there's dirty code inside bin_dir/src/libperlhasp.pm
-		->fry( { arch => $arch, hasp => $d->{HASP}, haspid => $d->{HASPID}, pid => 12 } )
-# and cp 'VN', 'auto' and (in case of VN-HASP)
-		->cp("$BINDIR/lib");  
-	
-	print "Merging libperlhasp code to $BINDIR...\n";
-# next part is nogood yet... 
-# lib 2 lib, sbin 2 sbin, ash to ash
-	$libperlhasp->files('haspd.pl')->cp("$BINDIR/sbin");
-	$libperlhasp->files('Log.pm')->cp("$BINDIR/lib/GNF");
-# and cp all other staff 2 bin_dir/redist
-	$libperlhaspasperlhasp->files('haspd.conf')->cp("$BINDIR/redist/etc");
-	$libperlhasp->files('hasp')->cp("$BINDIR/redist/etc/init.d");
-	$libperlhasp->files('etcdit-haspd-conf.pl')->cp("$BINDIR/redist/usr/local/bin");
-
-# ... 	as we put everything in right places, haspd will be built with others things
-
-# and just before rolling dist	
-	if($d->{HASPIDD} ne "NOHASP"){
-		my $dir = "$BINDIR/redist/usr/local/lib";
-		$dir .=	"64" if $arch =~ /^x86_64$/;
-		system "mkdir -p $dir";
-		foreach(`ls $BINDIR/lib/`){
-			chomp;
-			if(/^libhasplnx\.a$/ or /^libhasp_linux_.*\.lib(so|a)$/){
-				print "copy hasp libs: $_\n";
-				system "mv $BINDIR/lib/$_ $dir";
-			}
-		}
-	}
-
-# we wanna haspd daemon in /usr/local/sbin, so
-	system "mkdir $BINDIR/redist/usr/local/sbin";
-	system "mv $BINDIR/sbin/haspd $BINDIR/redist/usr/local/sbin"; 
-
-================================================================================================	
+./prepare-hasp.pl --help
 
 ******
 source dir has files specific 4 libperlhasp project: haspd.pl haspd.conf etc.:
@@ -81,8 +16,6 @@ source/
 |-- lib
 |   `-- GNF
 |       `-- Log.pm 		another one 'local' MMP::Log
-|       `-- Dev
-|           `-- libperlhasp.pm 	setup/make/install helper 4 those prjs who wanna have hasp
 `-- sbin
     `-- haspd.pl 		haspd daemon
 
@@ -94,19 +27,3 @@ redist/
 |-- aksusbd-suse-1.14-3.i386.rpm 	else
 |-- HASPemu 				will use it if HASPID == NOHASP
 `-- VN-HASP 				else
-
-******
-modules dir here because I wanna move module gnfdev in independent repos
-******
-modules/
-`-- gnfdev 					helper to dist creation process
-    `-- source
-        `-- lib
-            `-- GNF
-                |-- Config.pm 			another one 'local' MMP::Config
-                |-- Dev
-                |   |-- Objects.pm 		base 4 GNF::Dev::libperlhasp
-                |   `-- Utils.pm 		get_host_slesno, get_host_arch etc.
-                `-- Dev.pm 			main subs: read config, name dist etc.
-
-

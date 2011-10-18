@@ -1,11 +1,8 @@
 #!/usr/bin/perl -w
 use strict;
-
 use FindBin;
-use lib "$FindBin::Bin/modules/gnfdev/source/lib";
-use GNF::Dev::Utils qw(get_host_slesno);
 
-my $SLESNO = get_host_slesno; 
+my $SLESNO = get_host_slesno(); 
 while(my $arg = shift @ARGV){
 	if($arg =~ /^--slesno=(\d+)/){
 		$SLESNO = $1; 
@@ -27,3 +24,12 @@ else{
 	print "$FindBin::Bin/redist/aksusbd-suse-1.14-3.i386.rpm\n";
 }	
 
+sub get_host_slesno{
+	die 'file /etc/SuSE-release not exists' unless -e '/etc/SuSE-release';
+	my $res = `cat /etc/SuSE-release | grep VERSION`;
+	chomp $res;
+	if($res =~ /^\s*VERSION\s*=\s*(\d+(\.\d+)?)\s*$/){
+		return $1;
+	}
+	die "unsupported /etc/SuSE-release line format: '$res'";
+}
