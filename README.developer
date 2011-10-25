@@ -1,0 +1,29 @@
+******
+HOWTO use new libperlhasp
+******
+./prepare-hasp.pl --help
+
+******
+source dir has files specific 4 libperlhasp project: haspd.pl haspd.conf etc.:
+******
+source/
+|-- bin
+|   `-- edit-haspd-conf.pl 	haspd.conf editor    
+|-- etc
+|   |-- haspd.conf 		default config file
+|   `-- init.d
+|       `-- hasp 		haspd launcher
+|-- lib
+|   `-- GNF
+|       `-- Log.pm 		another one 'local' MMP::Log
+`-- sbin
+    `-- haspd.pl 		haspd daemon
+
+******
+redist dir has redist things:):
+******
+redist/
+|-- aksusbd-1.15-1.i386-x86_64.rpm 	will use it 4 SLES maj version number >= 10
+|-- aksusbd-suse-1.14-3.i386.rpm 	else
+|-- HASPemu 				will use it if HASPID == NOHASP
+`-- VN-HASP 				else
