@@ -106,7 +106,7 @@ sub main{
 	system "cp $prj_dir/source/sbin/haspd.pl $dir1";
 	my $dir2 = "$dest_dir/usr/local/sbin";
 	system "mkdir -p $dir2" unless -e $dir2;
-	system "perlapp --force --lib $tmp_dir/lib --exe $dir2/haspd $dir1/haspd.pl";
+	system "$PERLAPP --force --lib $tmp_dir/lib --exe $dir2/haspd $dir1/haspd.pl";
 
 	print "Copy other files...\n";
 	system "cp -r $prj_dir/source/etc $dest_dir";
