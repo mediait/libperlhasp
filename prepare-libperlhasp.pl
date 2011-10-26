@@ -3,9 +3,14 @@ use strict;
 use Getopt::Long;
 use Cwd;
 use File::Spec;
+use IPC::System::Simple qw(system);
 
 use FindBin;
 use lib "$FindBin::Bin/source/lib";
+
+my $PERLAPP = `which perlapp`;
+die "perlapp not found" unless $PERLAPP;
+chomp $PERLAPP;
 
 sub usage{
 	print 	"USAGE\n".
