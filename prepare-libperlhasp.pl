@@ -103,6 +103,7 @@ sub main{
 	print "Compile haspd...\n";
 	my $dir1 = "$tmp_dir/usr/local/sbin";
 	system "mkdir -p $dir1" unless -e $dir1;
+	system "cp -r $prj_dir/source/lib/* $tmp_dir/lib";
 	system "cp $prj_dir/source/sbin/haspd.pl $dir1";
 	my $dir2 = "$dest_dir/usr/local/sbin";
 	system "mkdir -p $dir2" unless -e $dir2;
