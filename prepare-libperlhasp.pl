@@ -6,7 +6,7 @@ use File::Spec;
 use IPC::System::Simple qw(system);
 
 use FindBin;
-use lib "$FindBin::Bin/source/lib";
+use lib "$FindBin::Bin/haspd/lib";
 
 my $PERLAPP = `which perlapp`;
 die "perlapp not found" unless $PERLAPP;
@@ -20,17 +20,18 @@ sub usage{
 		"  --hasp=(HASP4|HASPHL) 		- what kinf of HASP to use, default is HASPHL\n".
 		"  --pid=\\d+ 				- HASP Program ID, mandatory if --haspid != NOHASP\n".
 		"  --fid=\\d+ 				- HASP Function ID, default is 1\n".
-		"  --prj-dir=/some/path 		- libperlhasp project  home dir, default is \$FindBin::Bin\n".
-		"  --tmp-dir=/some/path 		- tmp dir - where to do all dirty things, default is `cwd`/tmp\n".
+		"  --prj-dir=/some/path 			- libperlhasp project  home dir, default is \$FindBin::Bin\n".
+		"  --tmp-dir=/some/path 			- tmp dir - where to do all dirty things, default is `cwd`/tmp\n".
 		"  --dest-dir=/some/path 		- destination dir - where to put result, default is --tmp-dir/redist\n".
+		"  --with-haspd				- build/install 'haspd' daemon\n".
 		"  --help 				- shows this\n".
 		"DESCRIPTION\n".
-		"  puts redist/aksusbd-*.rpm in --dest-dir/redist if --haspid ne NOHASP\n".
-		"  puts redist/VN-HASP/.../libhasp_linux_*108230.so in --dest-dir/usr/local/lib(64)? if --haspid ne NOHASP\n".
+		"  puts libhasp/aksusbd-*.rpm in --dest-dir/redist if --haspid ne NOHASP\n".
+		"  puts libhasp/VN-HASP/.../libhasp_linux_*108230.so in --dest-dir/usr/local/lib(64)? if --haspid ne NOHASP\n".
 		"  puts VN-HASP or HASPemu in --tmp-dir/(VN-HASP|HASPemu)\n".
 		"  configure and build it there and install libs in --tmp-dir/lib\n".
-		"  puts source/bin/ source/etc in --dest-dir/\n".
-		"  puts source/sbin/haspd.pl in --tmp-dir/usr/local/sbin, builds it there\n".
+		"  puts haspd/bin/ haspd/etc in --dest-dir/\n".
+		"  puts haspd/sbin/haspd.pl in --tmp-dir/usr/local/sbin, builds it there\n".
 		"  and puts binary to --dest-dir/usr/local/sbin\n".
 		"  create any needed dirs\n";
 }
@@ -42,6 +43,7 @@ $OPTS{fid} = 1;
 $OPTS{"prj-dir"} = $FindBin::Bin;
 $OPTS{"tmp-dir"} = cwd."/tmp";
 $OPTS{"dest-dir"} = $OPTS{"tmp-dir"}."/redist";
+$OPTS{"with-haspd"} = 0;
 {
 	my $warn;
 	local $SIG{__WARN__} = sub {$warn = join " ", @_};
@@ -52,7 +54,8 @@ $OPTS{"dest-dir"} = $OPTS{"tmp-dir"}."/redist";
 			"prj-dir=s",
 			"dest-dir=s",
 			"tmp-dir=s",
-			"help"
+			"with-haspd",
+			"help",
 		)){
 		usage;
 		exit 1;
@@ -83,37 +86,25 @@ sub main{
 	print "Prepare hasp...\n";
 	my $hasp = choose_hasp();
 	system "mkdir -p $tmp_dir" unless -e $tmp_dir;
-	system "cp -r $prj_dir/redist/$hasp $tmp_dir";
+	system "cp -r $prj_dir/libhasp/$hasp $tmp_dir";
 	build_hasp("$tmp_dir/$hasp");
 	
 	if(my $aksusbd = choose_aksusbd()){
 		print "Choose aksusbd... $aksusbd\n";
 		my $dir = "$dest_dir/redist";
 		system "mkdir -p $dir" unless -e $dir;
-		system "cp $prj_dir/redist/$aksusbd $dir";
+		system "cp $prj_dir/libhasp/$aksusbd $dir";
 	}
 
 	if(my $hasp_so = choose_hasp_so()){
 		print "Choose hasp shared object... $hasp_so\n";
 		my $so_dir = "$dest_dir/usr/local/lib".($OPTS{arch} eq "x86_64" ? "64" : "");
 		system "mkdir -p $so_dir" unless -e $so_dir;
-		system "cp $prj_dir/redist/VN-HASP/lib/VN/HASP/HASPHL/hasp/$hasp_so $so_dir";
+		system "cp $prj_dir/libhasp/VN-HASP/lib/VN/HASP/HASPHL/hasp/$hasp_so $so_dir";
 	}
 
-	print "Compile haspd...\n";
-	my $dir1 = "$tmp_dir/usr/local/sbin";
-	system "mkdir -p $dir1" unless -e $dir1;
-	system "cp -r $prj_dir/source/lib/* $tmp_dir/lib";
-	system "cp $prj_dir/source/sbin/haspd.pl $dir1";
-	my $dir2 = "$dest_dir/usr/local/sbin";
-	system "mkdir -p $dir2" unless -e $dir2;
-	system "$PERLAPP --force --lib $tmp_dir/lib --exe $dir2/haspd $dir1/haspd.pl";
-
-	print "Copy other files...\n";
-	system "cp -r $prj_dir/source/etc $dest_dir";
-	my $dir = "$dest_dir/usr/local";
-	system "mkdir -p $dir" unless -e $dir;
-	system "cp -r $prj_dir/source/bin $dir";
+    build_haspd()
+        if( $OPTS{"with-haspd"} );
 }
 
 sub choose_hasp{
@@ -176,6 +167,27 @@ sub build_hasp{
 	else{
 		die "unknown HASP type";
 	}
+}
+
+sub build_haspd{
+	my $prj_dir = $OPTS{"prj-dir"};
+	my $tmp_dir = $OPTS{"tmp-dir"};
+	my $dest_dir = $OPTS{"dest-dir"};
+
+	print "Compile haspd...\n";
+	my $dir1 = "$tmp_dir/usr/local/sbin";
+	system "mkdir -p $dir1" unless -e $dir1;
+	system "cp -r $prj_dir/haspd/lib/* $tmp_dir/lib";
+	system "cp $prj_dir/haspd/sbin/haspd.pl $dir1";
+	my $dir2 = "$dest_dir/usr/local/sbin";
+	system "mkdir -p $dir2" unless -e $dir2;
+	system "$PERLAPP --force --lib $tmp_dir/lib --exe $dir2/haspd $dir1/haspd.pl";
+
+    print "Copy other files...\n";
+	system "cp -r $prj_dir/haspd/etc $dest_dir";
+	my $dir = "$dest_dir/usr/local";
+	system "mkdir -p $dir" unless -e $dir;
+	system "cp -r $prj_dir/haspd/bin $dir";
 }
 
 sub get_host_slesno{

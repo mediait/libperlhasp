@@ -18,10 +18,10 @@ while(my $arg = shift @ARGV){
 }
 
 if($SLESNO >= 10){
-	print "$FindBin::Bin/redist/aksusbd-1.15-1.i386-x86_64.rpm\n";
+	print "$FindBin::Bin/libhasp/aksusbd-1.15-1.i386-x86_64.rpm\n";
 }
 else{
-	print "$FindBin::Bin/redist/aksusbd-suse-1.14-3.i386.rpm\n";
+	print "$FindBin::Bin/libhasp/aksusbd-suse-1.14-3.i386.rpm\n";
 }	
 
 sub get_host_slesno{
