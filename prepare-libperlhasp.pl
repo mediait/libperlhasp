@@ -95,6 +95,10 @@ sub main{
 		system "mkdir -p $dir" unless -e $dir;
 		system "cp $prj_dir/libhasp/$aksusbd $dir";
 	}
+	else {
+		my $dir = "$dest_dir/redist";
+		system "mkdir -p $dir" unless -e $dir;
+	}
 
 	if(my $hasp_so = choose_hasp_so()){
 		print "Choose hasp shared object... $hasp_so\n";
